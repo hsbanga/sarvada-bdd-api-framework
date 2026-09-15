@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!-- Thread count is injected by the surefire plugin from -Dthreads (default 1). -->
+<suite name="Sarvada BDD API Suite" verbose="1">
+  <test name="Cucumber scenarios">
+    <classes>
+      <class name="com.sarvadainfotech.bdd.api.runner.TestRunner"/>
+    </classes>
+  </test>
+</suite>

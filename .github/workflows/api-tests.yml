@@ -1,0 +1,48 @@
+name: API tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: Cucumber tag expression
+        default: "@regression"
+      env:
+        description: dev | stag | prod
+        default: dev
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Run Cucumber suite
+        env:
+          # Real API keys belong in repository secrets, never in the repo.
+          DATA_API_KEY: ${{ secrets.DATA_API_KEY }}
+        run: >
+          mvn -B verify
+          -Denv=${{ github.event.inputs.env || 'dev' }}
+          -Dthreads=4
+          -Dcucumber.filter.tags="${{ github.event.inputs.tags || '@regression' }}"
+
+      - name: Publish reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-reports-${{ github.run_number }}
+          path: |
+            target/cucumber-reports
+            target/cucumber-html-report
+            target/logs
+          if-no-files-found: ignore

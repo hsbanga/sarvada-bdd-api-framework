@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.sarvadainfotech</groupId>
+  <artifactId>sarvada-bdd-api-framework</artifactId>
+  <version>2.0.0</version>
+  <packaging>jar</packaging>
+  <name>Sarvada BDD API Automation Framework</name>
+  <description>Cucumber 7 + Rest Assured 6 + TestNG REST API automation framework with a reusable, data-driven Gherkin vocabulary.</description>
+  <url>https://github.com/hsbanga/sarvada-bdd-api-framework</url>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <cucumber.version>7.34.8</cucumber.version>
+    <restassured.version>6.0.1</restassured.version>
+    <testng.version>7.12.0</testng.version>
+    <assertj.version>3.27.7</assertj.version>
+    <jackson.version>2.22.2</jackson.version>
+    <log4j.version>2.26.1</log4j.version>
+    <surefire.version>3.5.2</surefire.version>
+
+    <!-- Runtime switches (override with -D). Documented in README. -->
+    <env>dev</env>
+    <threads>1</threads>
+    <cucumber.filter.tags></cucumber.filter.tags>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.cucumber</groupId>
+        <artifactId>cucumber-bom</artifactId>
+        <version>${cucumber.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-testng</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-picocontainer</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>${testng.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <version>${restassured.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>${restassured.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- Pin SLF4J 2.x explicitly; some transitive dependencies still pull 1.7 and would win by proximity. -->
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>2.0.19</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+      <plugin>
+        <!-- Test-only project: never package an (empty) jar. Also keeps the report plugin's forked lifecycle happy. -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <configuration>
+          <skipIfEmpty>true</skipIfEmpty>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+        <configuration>
+          <suiteXmlFiles>
+            <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+          </suiteXmlFiles>
+          <properties>
+            <property>
+              <name>dataproviderthreadcount</name>
+              <value>${threads}</value>
+            </property>
+          </properties>
+          <systemPropertyVariables>
+            <env>${env}</env>
+            <cucumber.filter.tags>${cucumber.filter.tags}</cucumber.filter.tags>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <!-- Rich HTML report from target/cucumber-reports/cucumber.json: mvn verify -->
+        <groupId>net.masterthought</groupId>
+        <artifactId>maven-cucumber-reporting</artifactId>
+        <version>5.8.2</version>
+        <executions>
+          <execution>
+            <id>cucumber-html-report</id>
+            <phase>verify</phase>
+            <goals><goal>generate</goal></goals>
+            <configuration>
+              <projectName>${project.name}</projectName>
+              <outputDirectory>${project.build.directory}/cucumber-html-report</outputDirectory>
+              <inputDirectory>${project.build.directory}/cucumber-reports</inputDirectory>
+              <jsonFiles><param>**/*.json</param></jsonFiles>
+              <checkBuildResult>false</checkBuildResult>
+              <classifications>
+                <Environment>${env}</Environment>
+                <Threads>${threads}</Threads>
+              </classifications>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
